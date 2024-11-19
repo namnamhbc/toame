@@ -1,13 +1,16 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors'); // Import thư viện CORS
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Render sẽ tự cấp phát cổng
+const PORT = process.env.PORT || 3000;
 
-let isToaimeRunning = false; // Trạng thái mặc định là OFF (chuyển hướng tắt)
+let isToaimeRunning = false;
 
-// Phục vụ file tĩnh từ thư mục 'public'
-app.use(express.static(path.join(__dirname, 'public')));
+// Cấu hình CORS: chỉ cho phép trang web "www.nydravn.site" truy cập API
+app.use(cors({
+  origin: 'https://www.nydravn.site', // Đường dẫn của trang Ladipage
+}));
 
 // API kiểm tra trạng thái chuyển hướng
 app.get('/status', (req, res) => {
@@ -24,17 +27,6 @@ app.get('/start', (req, res) => {
 app.get('/stop', (req, res) => {
   isToaimeRunning = false;
   res.json({ message: 'Chuyển hướng đã được tắt', redirectEnabled: false });
-});
-
-// Endpoint chính khách hàng truy cập
-app.get('/emsjapan', (req, res) => {
-  if (isToaimeRunning) {
-    // Chuyển hướng đến emsnhatban nếu chuyển hướng đang bật
-    res.redirect('https://www.nydravn.site/emsnhatban');
-  } else {
-    // Trả về trang chính
-    res.sendFile(path.join(__dirname, 'public/index.html'));
-  }
 });
 
 // Chạy server
