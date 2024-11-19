@@ -2,36 +2,42 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = 3; // Cổng server sẽ chạy
+const PORT = process.env.PORT || 3000; // Render sẽ tự cấp phát cổng
 
-let isToaimeRunning = false; // Trạng thái app TOAIME
+let isToaimeRunning = false; // Trạng thái mặc định là OFF (chuyển hướng tắt)
 
 // Phục vụ file tĩnh từ thư mục 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Endpoint '/boc' để chuyển hướng
-app.get('/boc', (req, res) => {
+// API kiểm tra trạng thái chuyển hướng
+app.get('/status', (req, res) => {
+  res.json({ redirectEnabled: isToaimeRunning });
+});
+
+// API bật chuyển hướng
+app.get('/start', (req, res) => {
+  isToaimeRunning = true;
+  res.json({ message: 'Chuyển hướng đã được bật', redirectEnabled: true });
+});
+
+// API tắt chuyển hướng
+app.get('/stop', (req, res) => {
+  isToaimeRunning = false;
+  res.json({ message: 'Chuyển hướng đã được tắt', redirectEnabled: false });
+});
+
+// Endpoint chính khách hàng truy cập
+app.get('/emsjapan', (req, res) => {
   if (isToaimeRunning) {
-    // Nếu TOAIME đang chạy, trả về trang chứa logic chuyển hướng
-    res.sendFile(path.join(__dirname, 'public/index.html'));
+    // Chuyển hướng đến emsnhatban nếu chuyển hướng đang bật
+    res.redirect('https://www.nydravn.site/emsnhatban');
   } else {
-    res.status(503).send('TOAIME không hoạt động.');
+    // Trả về trang chính
+    res.sendFile(path.join(__dirname, 'public/index.html'));
   }
 });
 
-// API bật TOAIME
-app.get('/start', (req, res) => {
-  isToaimeRunning = true;
-  res.send('TOAIME đã bật.');
-});
-
-// API tắt TOAIME
-app.get('/stop', (req, res) => {
-  isToaimeRunning = false;
-  res.send('TOAIME đã tắt.');
-});
-
-// Chạy server trên cổng và cho phép truy cập từ mọi IP
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server đang chạy trên http://0.0.0.0:${PORT}`);
+// Chạy server
+app.listen(PORT, () => {
+  console.log(`Server đang chạy trên cổng ${PORT}`);
 });
