@@ -29,12 +29,19 @@ app.get('/stop', (req, res) => {
   res.json({ message: 'Chuyển hướng đã được tắt', redirectEnabled: false });
 });
 
+// Endpoint dành cho trang điều khiển
+app.get('/control', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
 // Endpoint chính cho khách hàng truy cập
 app.get('/emsjapan', (req, res) => {
   if (isToaimeRunning) {
+    // Chuyển hướng đến emsnhatban nếu chuyển hướng đang bật
     res.redirect('https://www.nydravn.site/emsnhatban');
   } else {
-    res.sendFile(path.join(__dirname, 'public/index.html'));
+    // Nếu chuyển hướng tắt, hiển thị thông báo
+    res.send('Chuyển hướng hiện đang tắt. Vui lòng thử lại sau.');
   }
 });
 
