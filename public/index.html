@@ -3,16 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TOAIME Redirect</title>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <title>TOAIME Control Panel</title>
+  <style>
+    #status {
+      width: 150px;
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
+      font-weight: bold;
+      color: white;
+      margin: 20px auto;
+      border-radius: 5px;
+    }
+    .on {
+      background-color: green;
+    }
+    .off {
+      background-color: red;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h1>Chờ một chút...</h1>
+  <h1>TOAIME Control Panel</h1>
+  <div id="status" class="off">OFF</div>
+  <button id="btn-on">Bật (ON)</button>
+  <button id="btn-off">Tắt (OFF)</button>
+
   <script>
-    $(document).ready(function() {
-      setTimeout(() => {
-        window.location.href = "/emsnhatban"; // Chuyển hướng sau 1 giây
-      }, 1000);
+    const statusDiv = document.getElementById('status');
+    const btnOn = document.getElementById('btn-on');
+    const btnOff = document.getElementById('btn-off');
+
+    // Cập nhật trạng thái hiển thị
+    function updateStatus(redirectEnabled) {
+      if (redirectEnabled) {
+        statusDiv.textContent = 'ON';
+        statusDiv.classList.remove('off');
+        statusDiv.classList.add('on');
+      } else {
+        statusDiv.textContent = 'OFF';
+        statusDiv.classList.remove('on');
+        statusDiv.classList.add('off');
+      }
+    }
+
+    // Kiểm tra trạng thái ban đầu từ server
+    fetch('/status')
+      .then(response => response.json())
+      .then(data => {
+        updateStatus(data.redirectEnabled);
+      });
+
+    // Bật chuyển hướng
+    btnOn.addEventListener('click', () => {
+      fetch('/start')
+        .then(response => response.json())
+        .then(data => {
+          updateStatus(data.redirectEnabled);
+        });
+    });
+
+    // Tắt chuyển hướng
+    btnOff.addEventListener('click', () => {
+      fetch('/stop')
+        .then(response => response.json())
+        .then(data => {
+          updateStatus(data.redirectEnabled);
+        });
     });
   </script>
 </body>
